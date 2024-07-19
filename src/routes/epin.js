@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const epin_controller_1 = require("../controllers/epin.controller");
+const router = (0, express_1.Router)();
+router.get('/', epin_controller_1.getAllEpins);
+router.get('/sold', epin_controller_1.getSoldEpinsController);
+router.get('/unsold', epin_controller_1.getUnsoldEpinsController);
+router.get('/:serial', epin_controller_1.getEpinBySerialController);
+router.get('/id/:id', epin_controller_1.getEpinByIdController);
+router.post('/vend/:user', epin_controller_1.placeOrderByUserController);
+router.get('/vend/:user', epin_controller_1.getOrdersByIdController);
+router.get('/vend/pins/:id', epin_controller_1.getVended);
+router.get('/vend/order/:order', epin_controller_1.getVendedByOrder);
+router.get('/unhinge/check', epin_controller_1.fetchAvailableTelcosWithDenominations);
+exports.default = router;

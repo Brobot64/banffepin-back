@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const telcoprovider_controller_1 = require("../controllers/telcoprovider.controller");
+const router = (0, express_1.Router)();
+router.post('/telco', telcoprovider_controller_1.addTelcoScron);
+router.get('/telco', telcoprovider_controller_1.getTelcoScron);
+router.get('/telco/:id', telcoprovider_controller_1.getOneTelcoProvider);
+router.put('/telco/:id', telcoprovider_controller_1.updateTelcoProvider);
+router.delete('/telco/:id', telcoprovider_controller_1.deleteTelcoProvider);
+exports.default = router;
