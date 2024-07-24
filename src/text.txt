@@ -1,0 +1,46 @@
+import cron from 'node-cron';
+import TelcoProviderModel, { ITelcoProvider } from '../models/telcoproviders';
+import { ftpHandleUpload } from './ftpConnect';
+
+const createTask = (provider: ITelcoProvider) => {
+    const { name, ftpUrl, schedule } = provider;
+    const interval = Math.ceil(Number(schedule.timeString) / 1000);
+
+    const task = async () => {
+        console.log(`Running scheduled upload for telco provider: ${name}`);
+        
+        // Fetch the latest provider data to ensure recent changes are captured
+        const updatedProvider = await TelcoProviderModel.findById(provider._id).populate('schedule').exec();
+        if (updatedProvider) {
+            const { ftpUrl: updatedFtpUrl } = updatedProvider;
+            await ftpHandleUpload(updatedFtpUrl, name);
+        } else {
+            console.error(`Unable to find updated provider data for ${provider._id}`);
+        }
+    };
+
+    if (interval < 60) {
+        cron.schedule(`*/${interval} * * * * *`, task);
+    } else if (interval < 3600) {
+        const minutes = Math.floor(interval / 60);
+        const seconds = interval % 60;
+        cron.schedule(`${seconds} */${minutes} * * * *`, task);
+    } else {
+        const hours = Math.floor(interval / 3600);
+        const minutes = Math.floor((interval % 3600) / 60);
+        const seconds = interval % 60;
+        cron.schedule(`${seconds} ${minutes} */${hours} * * *`, task);
+    }
+};
+
+export const taskRunner = async () => {
+    try {
+        const telcoProviders = await TelcoProviderModel.find().populate('schedule').exec();
+
+        telcoProviders.forEach(provider => {
+            createTask(provider);
+        });
+    } catch (error) {
+        console.error('Error running taskRunner:', error);
+    }
+};

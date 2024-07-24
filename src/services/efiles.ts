@@ -90,11 +90,12 @@ export const getEpinById = async (id: string): Promise<IE_Pin | null> => {
 
 
 export const assignEPinsToAgent = async (agentId: string, cart: any[]) => {
-    const epinsToAssign: Record<string, { pins: string[], denomination: string }> = {};
+    const epinsToAssign: Record<string, { pins: string[], denomination: string, timAt?: string }> = {};
   
     for (const item of cart) {
       const { denomination, quantity, telco } = item;
       const pins = await epinModel.find({ denomination, telco, isSold: false }).limit(quantity);
+      console.log(pins);
   
       if (pins.length < quantity) {
         throw new Error(`Not enough E-Pins available for denomination ${denomination} and telco ${telco}`);
@@ -102,30 +103,36 @@ export const assignEPinsToAgent = async (agentId: string, cart: any[]) => {
   
       const pinNumbers = pins.map(pin => decrypt(pin.pin)); //pin.pin);
       if (!epinsToAssign[telco]) {
-        epinsToAssign[telco] = { pins: [], denomination: denomination.toString() };
+        epinsToAssign[telco] = { pins: [], denomination: denomination.toString(), timAt: '' };
       }
       epinsToAssign[telco].pins.push(...pinNumbers);
   
-      await epinModel.updateMany(
-        { _id: { $in: pins.map(pin => pin._id) } },
-        { $set: { isSold: true } }
-      );
-  
+      // Save the assigned pins
+      // for (const [telco, { pins, denomination }] of Object.entries(epinsToAssign)) {
+      
       const newOrder = new Order({ userId: agentId , cart });
       const savedOrder = await newOrder.save();
-
-       // Save the assigned pins
-       const userPinAssignment = new userpinsModel({
+      
+      const userPinAssignment = new userpinsModel({
           userId: agentId,
           telco,
           denomination: denomination.toString(),
-          pins: epinsToAssign,
+          pins: pinNumbers, // This is already an array of strings
           assignedAt: new Date(),
           orderid: savedOrder._id
       });
       await userPinAssignment.save();
+      epinsToAssign[telco].timAt = userPinAssignment.assignedAt.toString();
+
+
+      // await epinModel.updateMany(
+      //   { _id: { $in: pins.map(pin => pin._id) } },
+      //   { $set: { isSold: true } }
+      // );
+  
     }
   
+    console.log(epinsToAssign);
     return epinsToAssign;
   };
 

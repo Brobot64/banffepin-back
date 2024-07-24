@@ -1,4 +1,4 @@
-import express, {Express} from 'express'
+import express, {Express, Request, Response} from 'express'
 import cors from'cors'
 const morgan = require('morgan');
 import dotenv from 'dotenv'
@@ -9,6 +9,7 @@ import schedulerRoute from './src/routes/schedule';
 import telcoRoute from './src/routes/telcoprovider'
 import epinRoutes from './src/routes/epin';
 import { taskRunner } from './src/utils/scheduleRunner';
+import { generatePDF } from './src/services/pdf';
 
 const app: Express = express();
 const PORT = process.env.PORT || 3003;
@@ -46,6 +47,16 @@ app.use('/pin', epinRoutes);
 // uploadEPinFiles('C:/Users/Brobot/OneDrive/Documents/N100-N100-PNGN_30062020_2342523406-2019006.txt')
 
 // ftpHandleUpload("/N100-N100-PNGN_30062020_2342523406-2019006.txt");
+
+app.post('/genpdf', async (req: Request, res: Response) => {
+    const {content} = req.body;
+    if (!content) {
+        return res.status(400).send('HTML content is required');
+    }
+
+    await generatePDF(content, res);
+})
+
 app.listen(PORT, () => {
     console.log(`Service Running on PORT: ${PORT}`)
 })

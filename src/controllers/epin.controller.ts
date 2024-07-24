@@ -76,15 +76,40 @@ const getEpinByIdController = async (req: Request, res: Response): Promise<void>
 };
 
 // Get orders by id
-const getOrdersByIdController =  async (req: Request, res: Response) => {
-    const { user } = req.params;
-    try {
-        const orders = await getOrdersByUserId(user);
-        res.status(200).json(orders);
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-}
+// const getOrdersByIdController =  async (req: Request, res: Response) => {
+//     const { user } = req.params;
+//     try {
+//         const orders = await getOrdersByUserId(user);
+//         res.status(200).json(orders);
+//     } catch (error: any) {
+//         res.status(500).json({ error: error.message });
+//     }
+// }
+
+// Get orders by userId
+const getOrdersByIdController = async (req: Request, res: Response) => {
+  const { user } = req.params;
+  const { query, dateOption, customStartDate, customEndDate, page, limit } = req.query;
+
+  try {
+    // Parse pagination and limit parameters
+    const pageNumber = page ? parseInt(page as string, 10) : 1;
+    const limitNumber = limit ? parseInt(limit as string, 10) : 30;
+
+    // Parse custom dates if provided
+    const customStart = customStartDate ? new Date(customStartDate as string) : undefined;
+    const customEnd = customEndDate ? new Date(customEndDate as string) : undefined;
+
+    // Convert query string to an object if provided
+    const queryObj = query ? JSON.parse(query as string) : {};
+
+    const orders = await getOrdersByUserId(user, queryObj, dateOption as string, customStart, customEnd, pageNumber, limitNumber);
+    res.status(200).json(orders);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 const placeOrderByUserController =  async (req: Request, res: Response) => {
     const { user } = req.params;
