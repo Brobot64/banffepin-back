@@ -61,6 +61,7 @@ const getOrdersByUserId = async (userId: string, query: any = {}, dateOption: st
     const orders = await Order.find(searchQuery)
                               .skip(skip)
                               .limit(limit)
+                              .sort({ createdAt: -1 })
                               .exec();
 
     return orders;
