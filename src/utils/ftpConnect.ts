@@ -12,8 +12,8 @@ export const ftpHandleUpload = async (ftpUrl: string, telco: string) => {
         await client.access({
             host: "eu-central-1.sftpcloud.io",
             port: 21,
-            user: "bf3c4d8e629d486887bbf57864197c5d",
-            password: "7CY1rDUU0CPqIxMMdA1jrOyKiZv57RPA",
+            user: "89f932b2161045f5b18e14b81f9eda1d",
+            password: "vwqeXjWKcLYk1SoO2Bo0reK9Kr9W904r",
         });
         await client.downloadTo(localPath, ftpUrl);
         const answer = await uploadEPinFiles(localPath, telco, "NG");

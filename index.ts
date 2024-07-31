@@ -8,6 +8,7 @@ import authRoute from './src/routes/account';
 import schedulerRoute from './src/routes/schedule';
 import telcoRoute from './src/routes/telcoprovider'
 import epinRoutes from './src/routes/epin';
+import walletRoutes from './src/routes/wallet'
 import { taskRunner } from './src/utils/scheduleRunner';
 import { generatePDF } from './src/services/pdf';
 
@@ -26,6 +27,7 @@ app.use('/auth', authRoute);
 app.use('/schedule', schedulerRoute);
 app.use('/provider', telcoRoute);
 app.use('/pin', epinRoutes);
+app.use('/all', walletRoutes);
 // pullPgp("https://file.io/37JuDvMXZw3B", '/Users/Brobot/Downloads/eplinflinter/jumper.txt');
 // deCryptPgp("/Users/Brobot/Downloads/eplinflinter/jumper.txt")
 // deCryptPgp("/Users/Brobot/Downloads/eplinflinter/jumper.txt")
