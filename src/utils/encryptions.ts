@@ -65,4 +65,8 @@ export const decrypt = (hash: string) => {
   return decrypted.toString();
 };
 
+export const createApiKey = () => {
+  return crypto.randomBytes(32).toString('hex');
+}
+
 

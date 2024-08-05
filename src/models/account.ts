@@ -44,6 +44,7 @@ export interface IAccount {
     status: AccountStatus;
     kycstatus: KYCStatus;
     lastLogin: Date;
+    transact_pin: string;
     metadata: {}
 }
 
@@ -60,6 +61,7 @@ const accountSchemaFields: Record<keyof IAccount, any> = {
     status: { type: String, required: true, enum: AccountStatus, default: AccountStatus.Active },
     kycstatus: { type: String, enum: KYCStatus, default: KYCStatus.Verified},
     lastLogin: { type: Date, default: Date.now() },
+    transact_pin: { type: String },
     metadata: { type: Object, default: {} }
 };
 

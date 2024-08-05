@@ -113,8 +113,9 @@ const getOrdersByIdController = async (req: Request, res: Response) => {
 
 const placeOrderByUserController =  async (req: Request, res: Response) => {
     const { user } = req.params;
+    const { pin } = req.query;
     try {
-        const response = await assignEPinsToAgent(user as string, req.body);
+        const response = await assignEPinsToAgent(user as string, req.body, pin as string);
         res.status(200).json(response);
     } catch (error: any) {
         res.status(500).json({ error: error.message }); 

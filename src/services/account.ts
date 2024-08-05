@@ -1,5 +1,6 @@
 import accountModel, { IAccount } from "../models/account";
-import { detokenizeUser, passCompare, passHash, tokenizeUser } from "../utils/encryptions";
+import apiKeyModel from "../models/apikey";
+import { createApiKey, detokenizeUser, passCompare, passHash, tokenizeUser } from "../utils/encryptions";
 
 
 export const signUpAccount = async (data: Partial<IAccount & {confirmPassword?: string}>) => {
@@ -43,6 +44,9 @@ export const signUpAccount = async (data: Partial<IAccount & {confirmPassword?: 
         });
 
         const registerAccount = await account.save();
+        const apiKey = new apiKeyModel({ key: createApiKey(), user: registerAccount.id });
+
+        await apiKey.save();
 
         const token = await tokenizeUser({
             id: registerAccount.id,
@@ -133,4 +137,37 @@ export const userInfo = async (token: string) => {
         throw new Error(error?.message);
     }
 }
+
+export const hasTransactionPin = async (userId: string): Promise<boolean> => {
+    try {
+      const user = await accountModel.findById(userId).select('transact_pin').lean();
+      return !!user?.transact_pin;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error checking transaction PIN');
+    }
+};
+
+export const addTransactionPin = async (id: string, data: any) => {
+    try {
+        const { pin, confirmPin } = data;
+        if (!pin || pin == '' || confirmPin == '' || !confirmPin) throw new Error('Pin required!');
+        if (pin !== confirmPin) throw new Error('Pins Mismatched!!');
+
+        const hashedPin = await passHash(pin);
+        const updatePin = await accountModel.findByIdAndUpdate(id, { transact_pin: hashedPin }, { new: true });
+
+        if (!updatePin) throw new Error("Error Updating Transaction Pin");
+
+        return {
+            msg: "Transaction Pin Updated successfully",
+        }
+
+    } catch (error: any) {
+        throw new Error(error?.message);
+    }
+}
+
+
+
 

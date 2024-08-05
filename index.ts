@@ -8,14 +8,25 @@ import authRoute from './src/routes/account';
 import schedulerRoute from './src/routes/schedule';
 import telcoRoute from './src/routes/telcoprovider'
 import epinRoutes from './src/routes/epin';
-import walletRoutes from './src/routes/wallet'
+import walletRoutes from './src/routes/wallet';
 import { taskRunner } from './src/utils/scheduleRunner';
 import { generatePDF } from './src/services/pdf';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 const app: Express = express();
 const PORT = process.env.PORT || 3003;
 
 taskRunner();
+
+app.use(helmet());
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { message: "Too many attempts. Try again later" }
+});
+app.use(limiter);
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
@@ -28,6 +39,7 @@ app.use('/schedule', schedulerRoute);
 app.use('/provider', telcoRoute);
 app.use('/pin', epinRoutes);
 app.use('/all', walletRoutes);
+
 // pullPgp("https://file.io/37JuDvMXZw3B", '/Users/Brobot/Downloads/eplinflinter/jumper.txt');
 // deCryptPgp("/Users/Brobot/Downloads/eplinflinter/jumper.txt")
 // deCryptPgp("/Users/Brobot/Downloads/eplinflinter/jumper.txt")

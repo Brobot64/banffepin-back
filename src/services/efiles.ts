@@ -1,8 +1,9 @@
 import fs from 'fs';
-import { decrypt, encrypt } from '../utils/encryptions';
+import { decrypt, encrypt, passCompare } from '../utils/encryptions';
 import epinModel, { IE_Pin } from '../models/epin';
 import Order from '../models/vends';
 import userpinsModel from '../models/userhistory';
+import accountModel from '../models/account';
 
 function removeFirstLast(arr: any[]) {
     return arr.slice(1, arr.length - 2);
@@ -89,13 +90,20 @@ export const getEpinById = async (id: string): Promise<IE_Pin | null> => {
 };
 
 
-export const assignEPinsToAgent = async (agentId: string, cart: any[]) => {
+export const assignEPinsToAgent = async (agentId: string, cart: any[], pin: string) => {
     const epinsToAssign: Record<string, { pins: string[], denomination: string, timAt?: string }> = {};
+
+    const userPin = await accountModel.findById(agentId).select('transact_pin').lean();
+
+    if(!userPin) throw new Error("Account not existing");
+
+    const pinMatch = await passCompare(pin, userPin?.transact_pin)
+
+    if (!pinMatch) throw new Error("Incorrect Pin");
   
     for (const item of cart) {
       const { denomination, quantity, telco } = item;
       const pins = await epinModel.find({ denomination, telco, isSold: false }).limit(quantity);
-      console.log(pins);
   
       if (pins.length < quantity) {
         throw new Error(`Not enough E-Pins available for denomination ${denomination} and telco ${telco}`);
@@ -125,14 +133,13 @@ export const assignEPinsToAgent = async (agentId: string, cart: any[]) => {
       epinsToAssign[telco].timAt = userPinAssignment.assignedAt.toString();
 
 
-      // await epinModel.updateMany(
-      //   { _id: { $in: pins.map(pin => pin._id) } },
-      //   { $set: { isSold: true } }
-      // );
+      await epinModel.updateMany(
+        { _id: { $in: pins.map(pin => pin._id) } },
+        { $set: { isSold: true } }
+      );
   
     }
   
-    console.log(epinsToAssign);
     return epinsToAssign;
   };
 
