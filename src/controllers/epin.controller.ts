@@ -120,7 +120,8 @@ const placeOrderByUserController =  async (req: Request, res: Response) => {
     } catch (error: any) {
         res.status(500).json({ error: error.message }); 
     }
-}
+};
+
 
 const fetchAvailableTelcosWithDenominations = async (req: Request, res: Response) => {
     try {
